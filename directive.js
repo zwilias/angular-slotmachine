@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('jquerySlotmachine', [])
+angular.module('slotmachine', [])
 
 .directive('diwSlotmachine', function ($parse) {
   return {
@@ -13,6 +13,8 @@ angular.module('jquerySlotmachine', [])
     },
     template: '<select ng-model="selected" ng-options="entry as accessor(entry) for entry in source"><option value="" disabled>{{ noSelection }}</option></select>',
     link: function (scope, element, attrs) {
+      var modelAccessor = $parse(attrs.ngModel);
+      
       scope.accessor = scope.displayProperty ? $parse(scope.displayProperty) : function (value) {
         return value;
       };
@@ -21,6 +23,14 @@ angular.module('jquerySlotmachine', [])
       
       scope.$on('slotmachine:shuffle', function() {
         scope.selected = _.sample(scope.source);
+      });
+      
+      scope.$watch('selected', function (val) {
+        modelAccessor.assign(scope.$parent, val);
+      });
+      
+      scope.$parent.$watch(modelAccessor, function (val) {
+        scope.selected = val;
       });
     }
   };
